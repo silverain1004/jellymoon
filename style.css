@@ -32,7 +32,7 @@ body {
   color: var(--text);
   background: radial-gradient(circle at 20% 20%, #ffd7ea 0%, var(--bg1) 35%, var(--bg2) 100%);
   display: grid;
-  place-items: start center;
+  place-items: center;
   padding: 16px;
   user-select: none;
   -webkit-user-select: none;
