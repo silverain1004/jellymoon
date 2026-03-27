@@ -133,6 +133,49 @@
       opacity: 0;
       pointer-events: none;
     }
+
+    .runaway-btn {
+      position: fixed;
+      left: 50%;
+      bottom: 20px;
+      transform: translateX(-50%);
+      z-index: 9999;
+      border: 2px solid #fff3bf;
+      border-radius: 999px;
+      background: linear-gradient(145deg, #fff7c6 0%, #ffd766 32%, #f0b90b 66%, #cc8c00 100%);
+      color: #5e4100;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+      font-family: inherit;
+      font-size: clamp(1.02rem, 2.7vw, 1.2rem);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      padding: 13px 22px;
+      box-shadow: 0 10px 26px rgba(204, 140, 0, 0.38), 0 0 0 2px rgba(255, 230, 156, 0.5), 0 0 22px rgba(255, 215, 102, 0.55);
+      cursor: pointer;
+      user-select: none;
+      touch-action: none;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+      white-space: nowrap;
+    }
+
+    .runaway-btn:hover {
+      transform: translateX(-50%) scale(1.03);
+      box-shadow: 0 14px 30px rgba(204, 140, 0, 0.45), 0 0 0 3px rgba(255, 235, 175, 0.62), 0 0 30px rgba(255, 215, 102, 0.68);
+      filter: brightness(1.05);
+    }
+
+    .runaway-btn.is-floating {
+      animation: btn-float-y 0.9s ease-in-out infinite alternate;
+    }
+
+    @keyframes btn-float-y {
+      from {
+        transform: translateX(-50%) translateY(0);
+      }
+      to {
+        transform: translateX(-50%) translateY(-10px);
+      }
+    }
   </style>
 </head>
 <body>
@@ -169,12 +212,41 @@
     allow="autoplay; encrypted-media"
     referrerpolicy="strict-origin-when-cross-origin"
   ></iframe>
+  <button id="runawayBtn" class="runaway-btn is-floating" type="button">100만원 받기</button>
   <script>
     const bgmPlayer = document.getElementById("bgmPlayer");
+    const runawayBtn = document.getElementById("runawayBtn");
     const params = new URLSearchParams(window.location.search);
     if (bgmPlayer && params.get("bgm") === "1") {
       const videoId = "-YBTYrIzlYc";
       bgmPlayer.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&controls=0`;
+    }
+
+    function moveRunawayButton() {
+      if (!runawayBtn) return;
+      runawayBtn.classList.remove("is-floating");
+      const margin = 12;
+      const buttonRect = runawayBtn.getBoundingClientRect();
+      const maxX = Math.max(margin, window.innerWidth - buttonRect.width - margin);
+      const maxY = Math.max(margin, window.innerHeight - buttonRect.height - margin);
+      const nextX = margin + Math.random() * (maxX - margin);
+      const nextY = margin + Math.random() * (maxY - margin);
+      runawayBtn.style.left = `${nextX}px`;
+      runawayBtn.style.top = `${nextY}px`;
+      runawayBtn.style.bottom = "auto";
+      runawayBtn.style.transform = "none";
+    }
+
+    if (runawayBtn) {
+      runawayBtn.addEventListener("pointerenter", moveRunawayButton);
+      runawayBtn.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        moveRunawayButton();
+      }, { passive: false });
+      runawayBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        moveRunawayButton();
+      });
     }
   </script>
 </body>
