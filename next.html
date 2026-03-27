@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eunbi Room</title>
+  <link rel="stylesheet" href="next.css" />
+</head>
+<body>
+  <main class="memory-app">
+    <header class="memory-header">
+      <!-- <h1 class="memory-title">은비의 고양이 같은그림찾기</h1> -->
+      <!-- <p class="memory-subtitle">같은 그림 2장을 맞춰보세요. (가로 5 x 세로 6)</p> -->
+    </header>
+
+    <section class="memory-hud" aria-live="polite">
+      <!-- <p class="hud-item">시도: <span id="tries">0</span></p> -->
+      <p class="hud-item"> 정답 개수:
+        <span id="matchedPairs">0</span> / <span id="totalPairs">10</span>
+      </p>
+    </section>
+
+    <section class="board-wrap">
+      <div class="memory-board" id="memoryBoard"></div>
+    </section>
+
+    <button class="next-mission-btn" id="nextMissionBtn" type="button" disabled>다음 미션으로</button>
+  </main>
+
+  <script src="next.js"></script>
+</body>
+</html>

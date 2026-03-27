@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eunbi Room</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="pin-gate" id="pinGate" role="dialog" aria-modal="true" aria-labelledby="pinTitle">
+    <div class="pin-card">
+      <h2 id="pinTitle" class="pin-title">PASSWORD</h2>
+      <p class="pin-desc">우리의 만남이 시작된 연도는?</p>
+      <form id="pinForm" class="pin-form" novalidate>
+        <div class="pin-slots" id="pinSlots" aria-label="4자리 PIN 입력">
+          <input class="pin-slot" type="password" inputmode="numeric" maxlength="1" autocomplete="off" required />
+          <input class="pin-slot" type="password" inputmode="numeric" maxlength="1" autocomplete="off" required />
+          <input class="pin-slot" type="password" inputmode="numeric" maxlength="1" autocomplete="off" required />
+          <input class="pin-slot" type="password" inputmode="numeric" maxlength="1" autocomplete="off" required />
+        </div>
+        <button class="pin-submit" type="submit">입장하기</button>
+      </form>
+      <p class="pin-error" id="pinError" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <main class="app">
+    <section class="hud">
+      <div>
+        <h1 class="title">은비에게 부케를 던지세요!</h1>
+        <!-- <p class="hint">화면을 꾹 눌러 부케를 던져요</p> -->
+      </div>
+      <div class="meter-wrap" aria-live="polite">
+        <div class="meter" aria-hidden="true">
+          <div class="meter-success-zone" id="meterSuccessZone"></div>
+          <div class="meter-fill" id="meterFill"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stage" id="stage">
+      <div class="ground"></div>
+      <div class="confetti-layer" id="confettiLayer" aria-hidden="true"></div>
+
+      <div class="character bride" aria-label="예주">
+        👰
+        <span class="name">예주</span>
+      </div>
+
+      <div class="character friend" aria-label="은비">
+        🙋‍♀️
+        <span class="name">은비</span>
+      </div>
+
+      <div class="bouquet" id="bouquet" aria-hidden="true">💐</div>
+    </section>
+
+    <p class="status" id="status">화면을 길게 눌렀다 떼어봐!</p>
+    <button class="enter-btn" id="enterBtn" type="button" disabled>입장하기</button>
+  </main>
+  <div class="page-fade" id="pageFade" aria-hidden="true"></div>
+  <iframe
+    id="bgmPlayer"
+    class="bgm-player"
+    title="background music"
+    src=""
+    allow="autoplay; encrypted-media"
+    referrerpolicy="strict-origin-when-cross-origin"
+  ></iframe>
+
+  <script src="script.js"></script>
+</body>
+</html>
