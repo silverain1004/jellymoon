@@ -3,22 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Eunbi Room</title>
+  <title>YEJU</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='52' font-size='52'%3E%F0%9F%92%95%3C/text%3E%3C/svg%3E" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="pin-gate" id="pinGate" role="dialog" aria-modal="true" aria-labelledby="pinTitle">
     <div class="pin-card">
-      <h2 id="pinTitle" class="pin-title">PASSWORD</h2>
-      <p class="pin-desc">우리의 만남이 시작된 연도는?</p>
+      <h2 id="pinTitle" class="pin-title">Enter the Password</h2>
+      <p class="pin-desc">은비를 만난 연도는?</p>
       <form id="pinForm" class="pin-form" novalidate>
         <div class="pin-slots" id="pinSlots" aria-label="4자리 PIN 입력">
-          <input class="pin-slot" type="password" inputmode="numeric" maxlength="1" autocomplete="off" required />
-          <input class="pin-slot" type="password" inputmode="numeric" maxlength="1" autocomplete="off" required />
-          <input class="pin-slot" type="password" inputmode="numeric" maxlength="1" autocomplete="off" required />
-          <input class="pin-slot" type="password" inputmode="numeric" maxlength="1" autocomplete="off" required />
+          <input class="pin-slot" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" required />
+          <input class="pin-slot" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" required />
+          <input class="pin-slot" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" required />
+          <input class="pin-slot" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" required />
         </div>
-        <button class="pin-submit" type="submit">입장하기</button>
       </form>
       <p class="pin-error" id="pinError" aria-live="polite"></p>
     </div>
@@ -55,7 +55,7 @@
       <div class="bouquet" id="bouquet" aria-hidden="true">💐</div>
     </section>
 
-    <p class="status" id="status">화면을 길게 눌렀다 떼어봐!</p>
+    <p class="status" id="status">화면을 길게 눌렀다 떼어봐</p>
     <button class="enter-btn" id="enterBtn" type="button" disabled>입장하기</button>
   </main>
   <div class="page-fade" id="pageFade" aria-hidden="true"></div>

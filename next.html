@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Eunbi Room</title>
+  <title>YEJU</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='52' font-size='52'%3E%F0%9F%92%95%3C/text%3E%3C/svg%3E" />
   <link rel="stylesheet" href="next.css" />
 </head>
 <body>
@@ -18,14 +19,47 @@
       <p class="hud-item"> 정답 개수:
         <span id="matchedPairs">0</span> / <span id="totalPairs">10</span>
       </p>
+      <p class="hud-item"> 남은 시간:
+        <span id="countdown">00:30</span>
+      </p>
     </section>
 
     <section class="board-wrap">
       <div class="memory-board" id="memoryBoard"></div>
+      <div class="white-fade" id="whiteFade" aria-hidden="true"></div>
     </section>
 
-    <button class="next-mission-btn" id="nextMissionBtn" type="button" disabled>다음 미션으로</button>
+    <button class="debug-pass-btn" id="debugPassBtn" type="button" hidden>테스트 통과</button>
   </main>
+
+  <div class="game-modal is-visible" id="startModal" role="dialog" aria-modal="true" aria-labelledby="startModalTitle">
+    <div class="game-modal-card">
+      <h2 id="startModalTitle">같은그림찾기</h2>
+      <p>30초 안에 카드를 전부 맞추면 성공!</p>
+      <button class="modal-btn" id="startGameBtn" type="button">시작하기</button>
+    </div>
+  </div>
+
+  <div class="game-modal" id="failModal" role="dialog" aria-modal="true" aria-labelledby="failModalTitle">
+    <div class="game-modal-card">
+      <h2 id="failModalTitle">시간 초과!</h2>
+      <p>포기하지마 넌 할 수 있어</p>
+      <button class="modal-btn" id="retryBtn" type="button">다시하기</button>
+    </div>
+  </div>
+
+  <article class="letter-card" id="letterCard" aria-hidden="true">
+    <h2>사랑하는 내 친구 예주에게</h2>
+    <p>너를 만난지 벌써 16년이 다 되어가네</p>
+    <p>뭘 해줄까 하다가 내가 가장 잘하는 걸 해봤어</p>
+    <p>긴 시간 동안 나랑 함께해줘서 고마워</p>
+    <p>지나온 시간보다도 더 많은 세월이 남았지만</p>
+    <p>우린 앞으로도 변함없이 쭉 함께일거야</p>
+    <p>항상 고맙고 결혼 진심으로 축하해</p>
+    <p>세상 누구보다 행복하길 진심으로 응원할게</p>
+    <p>우린 평생 친구인거 알지 💕</p>
+    <button class="letter-close-btn" id="letterCloseBtn" type="button">약속</button>
+  </article>
 
   <script src="next.js"></script>
 </body>

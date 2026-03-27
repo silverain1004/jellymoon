@@ -29,6 +29,7 @@ const bgmPlayer = document.getElementById("bgmPlayer");
 
 const REQUIRED_PIN = "2010";
 const YOUTUBE_VIDEO_ID = "-YBTYrIzlYc";
+const IS_TEST_MODE = new URLSearchParams(window.location.search).get("test") === "1";
 
 let pressStart = 0;
 let pressed = false;
@@ -56,7 +57,7 @@ function unlockGame() {
   pinGate.classList.add("is-hidden");
   document.body.classList.remove("pin-locked");
   stage.classList.remove("locked");
-  statusEl.textContent = "화면을 길게 눌렀다 떼어봐!";
+  statusEl.textContent = "화면을 길게 눌렀다 떼어봐";
 }
 
 function animateFriendFetch() {
@@ -164,7 +165,9 @@ function launchBouquet(power) {
   bouquet.style.transform = `translate(${distanceX}px, ${-peakY}px) rotate(${spin}deg)`;
   statusEl.textContent = `${(power * 100).toFixed(0)}% 파워로 은비에게 부케를 던졌어요!`;
 
-  const isOverPower = power >= OVERPOWER_THRESHOLD;
+  const { maxPower: catchMaxPower } = getCatchPowerRange();
+  const safeMaxPower = Math.min(catchMaxPower, OVERPOWER_THRESHOLD - 0.001);
+  const isOverPower = power > safeMaxPower;
   if (isOverPower) {
     const outX = stageRect.width * 1.25;
     const outY = -stageRect.height * 0.85;
@@ -198,7 +201,7 @@ function launchBouquet(power) {
   const bouquetStartX = stageRect.width * BOUQUET_START_RATIO_X;
   const travelX = bouquetStartX + distanceX;
   const isCaughtByRange = travelX >= catchMinX && travelX <= catchMaxX;
-  const isCaught = power <= TEST_AUTO_CATCH_MAX_POWER || isCaughtByRange;
+  const isCaught = (IS_TEST_MODE && power <= TEST_AUTO_CATCH_MAX_POWER) || isCaughtByRange;
 
   if (isCaught) {
     const catchTranslateX = Math.max(8, catchCenterX - bouquetStartX);
@@ -312,35 +315,6 @@ stage.addEventListener("pointerup", onPressEnd, { passive: false });
 stage.addEventListener("pointerleave", onPressEnd, { passive: false });
 stage.addEventListener("pointercancel", onPressEnd, { passive: false });
 
-pinInput.addEventListener("input", (event) => {
-  const onlyDigits = event.target.value.replace(/\D/g, "").slice(0, 6);
-  event.target.value = onlyDigits;
-  if (pinError.textContent) pinError.textContent = "";
-});
-
-pinForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const value = pinSlots.map((input) => input.value).join("");
-
-  if (value.length !== 4) {
-    pinError.textContent = "연도 4자리를 입력해줘!";
-    pinSlots[0]?.focus();
-    return;
-  }
-
-  if (value !== REQUIRED_PIN) {
-    pinError.textContent = "아쉽지만 정답이 아니야. 다시 입력해줘!";
-    pinSlots.forEach((input) => {
-      input.value = "";
-    });
-    pinSlots[0]?.focus();
-    return;
-  }
-
-  startBgm();
-  unlockGame();
-});
-
 enterBtn.addEventListener("click", () => {
   if (!caught) return;
   enterBtn.disabled = true;
@@ -359,6 +333,27 @@ updateMeterSuccessZone();
 lockGameByPin();
 if (pinSlots[0]) pinSlots[0].focus();
 
+function tryAutoUnlock() {
+  if (isUnlocked) return;
+  const value = pinSlots.map((input) => input.value).join("");
+  if (value.length !== 4) return;
+  if (value === REQUIRED_PIN) {
+    startBgm();
+    unlockGame();
+    return;
+  }
+  pinError.textContent = "땡! 다시 생각해봐";
+  pinSlots.forEach((input) => {
+    input.value = "";
+  });
+  pinSlots[0]?.focus();
+}
+
+pinForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  tryAutoUnlock();
+});
+
 pinSlots.forEach((input, index) => {
   input.addEventListener("input", (event) => {
     const onlyDigits = event.target.value.replace(/\D/g, "");
@@ -367,6 +362,7 @@ pinSlots.forEach((input, index) => {
     if (event.target.value && pinSlots[index + 1]) {
       pinSlots[index + 1].focus();
     }
+    tryAutoUnlock();
   });
 
   input.addEventListener("keydown", (event) => {
@@ -383,5 +379,6 @@ pinSlots.forEach((input, index) => {
     });
     const focusIndex = Math.min(pasted.length, pinSlots.length - 1);
     pinSlots[focusIndex]?.focus();
+    tryAutoUnlock();
   });
 });

@@ -19,13 +19,29 @@ const memoryBoard = document.getElementById("memoryBoard");
 const triesEl = document.getElementById("tries");
 const matchedPairsEl = document.getElementById("matchedPairs");
 const totalPairsEl = document.getElementById("totalPairs");
-const nextMissionBtn = document.getElementById("nextMissionBtn");
+const countdownEl = document.getElementById("countdown");
+const startModal = document.getElementById("startModal");
+const failModal = document.getElementById("failModal");
+const startGameBtn = document.getElementById("startGameBtn");
+const retryBtn = document.getElementById("retryBtn");
+const whiteFade = document.getElementById("whiteFade");
+const letterCard = document.getElementById("letterCard");
+const letterCloseBtn = document.getElementById("letterCloseBtn");
+const debugPassBtn = document.getElementById("debugPassBtn");
+const LETTER_BUTTON_LABELS = ["🤙약속", "🏷️ 도장", "✒️싸인", "🖨️복사", "🧾 코팅"];
+const IS_TEST_MODE = new URLSearchParams(window.location.search).get("test") === "1";
 
 let firstCard = null;
 let secondCard = null;
 let lockBoard = false;
 let tries = 0;
 let matchedPairs = 0;
+let completionPlayed = false;
+let gameStarted = false;
+let timeLeft = 30;
+let timerId = 0;
+const CLEAR_FINALE_MS = 5000;
+let letterButtonLabelIndex = 0;
 
 function shuffle(list) {
   const arr = [...list];
@@ -43,8 +59,8 @@ function updateHud() {
 }
 
 function setNextMissionEnabled(enabled) {
-  nextMissionBtn.disabled = !enabled;
-  nextMissionBtn.classList.toggle("enabled", enabled);
+  // End screen now finishes with letter only.
+  if (!enabled) return;
 }
 
 function resetTurn() {
@@ -53,9 +69,77 @@ function resetTurn() {
   lockBoard = false;
 }
 
+function formatTime(sec) {
+  const safe = Math.max(0, sec);
+  const mm = String(Math.floor(safe / 60)).padStart(2, "0");
+  const ss = String(safe % 60).padStart(2, "0");
+  return `${mm}:${ss}`;
+}
+
+function updateTimerUi() {
+  if (!countdownEl) return;
+  countdownEl.textContent = formatTime(timeLeft);
+  countdownEl.classList.toggle("timer-warning", timeLeft > 0 && timeLeft <= 10);
+}
+
+function stopTimer() {
+  if (!timerId) return;
+  window.clearInterval(timerId);
+  timerId = 0;
+}
+
+function lockBoardUi(isLocked) {
+  memoryBoard.classList.toggle("is-locked", isLocked);
+  lockBoard = isLocked;
+}
+
+function handleTimeUp() {
+  gameStarted = false;
+  stopTimer();
+  lockBoardUi(true);
+  failModal.classList.add("is-visible");
+}
+
+function startTimer() {
+  stopTimer();
+  timeLeft = 30;
+  updateTimerUi();
+  timerId = window.setInterval(() => {
+    timeLeft -= 1;
+    updateTimerUi();
+    if (timeLeft <= 0) {
+      handleTimeUp();
+    }
+  }, 1000);
+}
+
+function playClearSequence(letterDelayMs = CLEAR_FINALE_MS) {
+  if (completionPlayed) return;
+  completionPlayed = true;
+  gameStarted = false;
+  stopTimer();
+  lockBoard = true;
+  memoryBoard.classList.add("is-clearing");
+  memoryBoard.classList.add("is-fading-out");
+  whiteFade.classList.add("is-active");
+  document.body.classList.add("is-clearing-page");
+
+  window.setTimeout(() => {
+    startModal.classList.remove("is-visible");
+    failModal.classList.remove("is-visible");
+    letterCard.classList.add("is-visible");
+    letterCard.setAttribute("aria-hidden", "false");
+    document.body.classList.add("is-letter-visible");
+    letterCard.style.opacity = "1";
+    letterCard.style.visibility = "visible";
+    letterCard.style.pointerEvents = "auto";
+  }, letterDelayMs);
+}
+
 function onCardClick(event) {
   const card = event.currentTarget;
 
+  if (!gameStarted) return;
   if (lockBoard) return;
   if (card === firstCard) return;
   if (card.classList.contains("is-matched")) return;
@@ -83,11 +167,15 @@ function onCardClick(event) {
     updateHud();
     resetTurn();
 
-    if (matchedPairs === TOTAL_PAIRS) setNextMissionEnabled(true);
+    if (matchedPairs === TOTAL_PAIRS) {
+      setNextMissionEnabled(true);
+      playClearSequence();
+    }
     return;
   }
 
   window.setTimeout(() => {
+    if (!gameStarted) return;
     firstCard.classList.remove("is-flipped");
     secondCard.classList.remove("is-flipped");
     resetTurn();
@@ -150,13 +238,81 @@ function startGame() {
 
   tries = 0;
   matchedPairs = 0;
+  completionPlayed = false;
   updateHud();
   resetTurn();
   setNextMissionEnabled(false);
+  memoryBoard.classList.remove("is-clearing");
+  memoryBoard.classList.remove("is-fading-out");
+  lockBoardUi(false);
+  whiteFade.classList.remove("is-active");
+  document.body.classList.remove("is-clearing-page");
+  document.body.classList.remove("is-letter-visible");
+  letterCard.classList.remove("is-visible");
+  letterCard.setAttribute("aria-hidden", "true");
+  letterCard.style.opacity = "";
+  letterCard.style.visibility = "";
+  letterCard.style.pointerEvents = "";
+  letterButtonLabelIndex = 0;
+  letterCloseBtn.textContent = LETTER_BUTTON_LABELS[0];
+  letterCloseBtn.disabled = false;
 }
 
-nextMissionBtn.addEventListener("click", () => {
-  if (nextMissionBtn.disabled) return;
-  window.location.href = "mission3.html";
+letterCloseBtn.addEventListener("click", () => {
+  if (letterButtonLabelIndex >= LETTER_BUTTON_LABELS.length - 1) {
+    letterCloseBtn.disabled = true;
+    document.body.classList.add("is-exiting");
+    window.setTimeout(() => {
+      window.location.href = "certificate.html";
+    }, 900);
+    return;
+  }
+  letterButtonLabelIndex = Math.min(letterButtonLabelIndex + 1, LETTER_BUTTON_LABELS.length - 1);
+  letterCloseBtn.textContent = LETTER_BUTTON_LABELS[letterButtonLabelIndex];
 });
-startGame();
+
+startGameBtn.addEventListener("click", () => {
+  startModal.classList.remove("is-visible");
+  gameStarted = true;
+  startGame();
+  startTimer();
+});
+
+retryBtn.addEventListener("click", () => {
+  failModal.classList.remove("is-visible");
+  gameStarted = true;
+  startGame();
+  startTimer();
+});
+
+if (IS_TEST_MODE) {
+  debugPassBtn.hidden = false;
+  debugPassBtn.addEventListener("click", () => {
+    stopTimer();
+    startModal.classList.remove("is-visible");
+    failModal.classList.remove("is-visible");
+    gameStarted = false;
+    completionPlayed = false;
+    memoryBoard.classList.remove("is-clearing", "is-fading-out");
+    whiteFade.classList.remove("is-active");
+    document.body.classList.remove("is-clearing-page");
+    document.body.classList.remove("is-letter-visible");
+    letterCard.classList.remove("is-visible");
+    letterCard.setAttribute("aria-hidden", "true");
+    letterCard.style.opacity = "";
+    letterCard.style.visibility = "";
+    letterCard.style.pointerEvents = "";
+    matchedPairs = TOTAL_PAIRS;
+    updateHud();
+    memoryBoard.querySelectorAll(".card").forEach((cardEl) => {
+      cardEl.classList.add("is-flipped", "is-matched");
+    });
+    setNextMissionEnabled(true);
+    playClearSequence();
+  });
+} else {
+  debugPassBtn.hidden = true;
+}
+
+updateTimerUi();
+lockBoardUi(true);
