@@ -176,6 +176,65 @@
         transform: translateX(-50%) translateY(-10px);
       }
     }
+
+    .top-toast {
+      position: fixed;
+      left: 50%;
+      top: 16px;
+      transform: translateX(-50%) translateY(-12px);
+      z-index: 10000;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: rgba(47, 42, 37, 0.9);
+      color: #fff8e1;
+      font-size: clamp(0.92rem, 2.2vw, 1.03rem);
+      letter-spacing: 0.02em;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease, transform 0.22s ease;
+      white-space: nowrap;
+    }
+
+    .top-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .coin-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10001;
+      overflow: hidden;
+    }
+
+    .coin {
+      position: fixed;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1px solid rgba(163, 109, 0, 0.8);
+      background: radial-gradient(circle at 30% 30%, #fff3b0 0%, #ffd54d 45%, #e6a700 100%);
+      color: #7a5200;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 22px;
+      text-align: center;
+      box-shadow: 0 2px 7px rgba(110, 74, 0, 0.45);
+      animation: coin-burst 980ms ease-out forwards;
+      transform: translate(-50%, -50%);
+    }
+
+    @keyframes coin-burst {
+      0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) translate(0, 0) rotate(0deg) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) translate(var(--dx), var(--dy)) rotate(var(--spin)) scale(0.78);
+      }
+    }
   </style>
 </head>
 <body>
@@ -212,14 +271,74 @@
     allow="autoplay; encrypted-media"
     referrerpolicy="strict-origin-when-cross-origin"
   ></iframe>
+  <div id="coinLayer" class="coin-layer" aria-hidden="true"></div>
+  <div id="topToast" class="top-toast" role="status" aria-live="polite"></div>
   <button id="runawayBtn" class="runaway-btn is-floating" type="button">100만원 받기</button>
   <script>
     const bgmPlayer = document.getElementById("bgmPlayer");
     const runawayBtn = document.getElementById("runawayBtn");
+    const topToast = document.getElementById("topToast");
+    const coinLayer = document.getElementById("coinLayer");
     const params = new URLSearchParams(window.location.search);
+    let chaseCount = 0;
+    let toastTimer = 0;
+    const chaseMessages = {
+      10: "집요한데..?",
+      20: "아직도 누르고 있어?",
+      30: "이제 끝났어",
+    };
+
     if (bgmPlayer && params.get("bgm") === "1") {
       const videoId = "-YBTYrIzlYc";
       bgmPlayer.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&controls=0`;
+    }
+
+    function showTopToast(message) {
+      if (!topToast || !message) return;
+      topToast.textContent = message;
+      topToast.classList.add("show");
+      if (toastTimer) window.clearTimeout(toastTimer);
+      toastTimer = window.setTimeout(() => {
+        topToast.classList.remove("show");
+      }, 1700);
+    }
+
+    function burstCoinsAt(x, y) {
+      if (!coinLayer) return;
+      const count = 46;
+      for (let i = 0; i < count; i += 1) {
+        const coin = document.createElement("span");
+        coin.className = "coin";
+        coin.textContent = "$";
+        coin.style.left = `${x}px`;
+        coin.style.top = `${y}px`;
+        const dx = (Math.random() - 0.5) * 340;
+        const dy = 26 + Math.random() * 180;
+        const spin = `${Math.random() * 520 - 260}deg`;
+        coin.style.setProperty("--dx", `${dx.toFixed(1)}px`);
+        coin.style.setProperty("--dy", `${dy.toFixed(1)}px`);
+        coin.style.setProperty("--spin", spin);
+        coinLayer.appendChild(coin);
+        window.setTimeout(() => {
+          coin.remove();
+        }, 1000);
+      }
+    }
+
+    function recordChaseAttempt(pointerX, pointerY) {
+      chaseCount += 1;
+      const message = chaseMessages[chaseCount];
+      if (message) {
+        showTopToast(message);
+        return;
+      }
+      if (chaseCount >= 40 && chaseCount % 10 === 0) {
+        showTopToast("옛다");
+        burstCoinsAt(
+          typeof pointerX === "number" ? pointerX : window.innerWidth * 0.5,
+          typeof pointerY === "number" ? pointerY : window.innerHeight * 0.5
+        );
+      }
     }
 
     function moveRunawayButton() {
@@ -241,10 +360,18 @@
       runawayBtn.addEventListener("pointerenter", moveRunawayButton);
       runawayBtn.addEventListener("pointerdown", (event) => {
         event.preventDefault();
+        recordChaseAttempt(event.clientX, event.clientY);
         moveRunawayButton();
       }, { passive: false });
       runawayBtn.addEventListener("click", (event) => {
         event.preventDefault();
+        moveRunawayButton();
+      });
+      runawayBtn.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        const rect = runawayBtn.getBoundingClientRect();
+        recordChaseAttempt(rect.left + rect.width / 2, rect.top + rect.height / 2);
         moveRunawayButton();
       });
     }
