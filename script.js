@@ -1,4 +1,4 @@
-const HOLD_MAX_MS = 900;
+const HOLD_MAX_MS = 650;
 const MIN_POWER = 0.08;
 const MAX_POWER = 1;
 const BOOST_START_RATIO = 0.45;
@@ -11,6 +11,7 @@ const BOUQUET_TRAVEL_BASE_RATIO = 0.2;
 const BOUQUET_TRAVEL_POWER_RATIO = 0.62;
 const CATCH_CENTER_RATIO_IN_FRIEND = 0.4;
 const CATCH_TOLERANCE_RATIO_IN_FRIEND = 0.06;
+const BOUQUET_CATCH_POINT_RATIO = 0.35;
 
 const stage = document.getElementById("stage");
 const bouquet = document.getElementById("bouquet");
@@ -50,6 +51,14 @@ function startBgm() {
   if (!bgmPlayer) return;
   const embedUrl = `https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=1&loop=1&playlist=${YOUTUBE_VIDEO_ID}&controls=0`;
   bgmPlayer.src = embedUrl;
+}
+
+function withCurrentQuery(path) {
+  const params = new URLSearchParams(window.location.search);
+  params.set("bgm", "1");
+  if (IS_TEST_MODE) params.set("test", "1");
+  const query = params.toString();
+  return query ? `${path}?${query}` : path;
 }
 
 function unlockGame() {
@@ -112,17 +121,19 @@ function chargedRatioFromHeld(ms) {
 function getCatchPowerRange() {
   const stageRect = stage.getBoundingClientRect();
   const friendRect = friend.getBoundingClientRect();
+  const bouquetRect = bouquet.getBoundingClientRect();
 
   const catchCenterX = friendRect.left - stageRect.left + friendRect.width * CATCH_CENTER_RATIO_IN_FRIEND;
   const catchTolerance = friendRect.width * CATCH_TOLERANCE_RATIO_IN_FRIEND;
   const catchMinX = catchCenterX - catchTolerance;
   const catchMaxX = catchCenterX + catchTolerance;
+  const bouquetWidth = bouquetRect.width;
 
-  const toPower = (xInStage) =>
+  const toPowerFromCatchPoint = (xInStage) =>
     (xInStage / stageRect.width - (BOUQUET_START_RATIO_X + BOUQUET_TRAVEL_BASE_RATIO)) / BOUQUET_TRAVEL_POWER_RATIO;
-
-  const minPower = Math.max(0, toPower(catchMinX));
-  const maxPower = Math.min(1, toPower(catchMaxX));
+  const catchPointOffset = bouquetWidth * BOUQUET_CATCH_POINT_RATIO;
+  const minPower = Math.max(0, toPowerFromCatchPoint(catchMinX - catchPointOffset));
+  const maxPower = Math.min(1, toPowerFromCatchPoint(catchMaxX - catchPointOffset));
   return { minPower, maxPower };
 }
 
@@ -199,8 +210,10 @@ function launchBouquet(power) {
   const catchMinX = catchCenterX - catchTolerance;
   const catchMaxX = catchCenterX + catchTolerance;
   const bouquetStartX = stageRect.width * BOUQUET_START_RATIO_X;
-  const travelX = bouquetStartX + distanceX;
-  const isCaughtByRange = travelX >= catchMinX && travelX <= catchMaxX;
+  const bouquetWidth = bouquet.getBoundingClientRect().width;
+  const bouquetLeftX = bouquetStartX + distanceX;
+  const catchPointX = bouquetLeftX + bouquetWidth * BOUQUET_CATCH_POINT_RATIO;
+  const isCaughtByRange = catchPointX >= catchMinX && catchPointX <= catchMaxX;
   const isCaught = (IS_TEST_MODE && power <= TEST_AUTO_CATCH_MAX_POWER) || isCaughtByRange;
 
   if (isCaught) {
@@ -321,7 +334,7 @@ enterBtn.addEventListener("click", () => {
   document.body.classList.add("fading-out");
   if (pageFade) pageFade.setAttribute("aria-hidden", "false");
   window.setTimeout(() => {
-    window.location.href = "next.html";
+    window.location.href = withCurrentQuery("next.html");
   }, 620);
 });
 

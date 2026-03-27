@@ -26,7 +26,7 @@ body {
   background-repeat: repeat;
   background-size: 320px auto;
   display: grid;
-  place-items: center;
+  place-items: start center;
   padding: 16px;
   position: relative;
   overflow: hidden;
@@ -136,7 +136,7 @@ body.is-letter-visible::before {
 .board-wrap {
   position: relative;
   width: 100%;
-  overflow-x: auto;
+  overflow-x: hidden;
   padding: 4px;
 }
 
@@ -145,10 +145,13 @@ body.is-clearing-page .board-wrap {
 }
 
 .memory-board {
-  min-width: 500px;
+  width: clamp(320px, 72vw, 460px);
+  max-width: 100%;
+  min-width: 0;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
+  margin-inline: auto;
 }
 
 .memory-board.is-locked {
@@ -244,7 +247,7 @@ body.is-clearing-page .board-wrap {
   border: 2px solid rgba(255, 171, 207, 0.45);
   border-radius: 12px;
   aspect-ratio: 1 / 1;
-  background: #fffafd;
+  background: #fff;
   padding: 0;
   perspective: 800px;
   cursor: pointer;
@@ -287,7 +290,7 @@ body.is-clearing-page .board-wrap {
 
 .card-front {
   background: linear-gradient(140deg, #ffeaf4, #ffdff0);
-  border: 2px solid rgba(255, 176, 213, 0.45);
+  border: 1px solid rgba(255, 176, 213, 0.45);
   display: grid;
   place-items: center;
   font-size: 2rem;
@@ -296,7 +299,7 @@ body.is-clearing-page .board-wrap {
 .card-back {
   transform: rotateY(180deg);
   background: #fff;
-  border: 2px solid rgba(255, 190, 220, 0.36);
+  border: 1px solid rgba(255, 190, 220, 0.36);
 }
 
 .card-back img {
@@ -406,6 +409,15 @@ body.is-clearing-page .board-wrap {
   cursor: pointer;
 }
 
+.bgm-player {
+  position: fixed;
+  width: 0;
+  height: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
 @media (max-width: 720px) {
   body {
     padding: 10px;
@@ -440,7 +452,8 @@ body.is-clearing-page .board-wrap {
   }
 
   .memory-board {
-    min-width: 360px;
+    width: min(340px, 100%);
+    min-width: 0;
     gap: 6px;
   }
 

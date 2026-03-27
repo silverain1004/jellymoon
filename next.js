@@ -1,6 +1,7 @@
 const BOARD_ROWS = 5;
 const BOARD_COLS = 4;
 const TOTAL_PAIRS = (BOARD_ROWS * BOARD_COLS) / 2;
+const YOUTUBE_VIDEO_ID = "-YBTYrIzlYc";
 
 const PHOTO_IMAGES = [
   "img/1765506290795.jpeg",
@@ -28,8 +29,10 @@ const whiteFade = document.getElementById("whiteFade");
 const letterCard = document.getElementById("letterCard");
 const letterCloseBtn = document.getElementById("letterCloseBtn");
 const debugPassBtn = document.getElementById("debugPassBtn");
+const bgmPlayer = document.getElementById("bgmPlayer");
 const LETTER_BUTTON_LABELS = ["🤙약속", "🏷️ 도장", "✒️싸인", "🖨️복사", "🧾 코팅"];
 const IS_TEST_MODE = new URLSearchParams(window.location.search).get("test") === "1";
+const IS_BGM_MODE = new URLSearchParams(window.location.search).get("bgm") === "1";
 
 let firstCard = null;
 let secondCard = null;
@@ -42,6 +45,20 @@ let timeLeft = 30;
 let timerId = 0;
 const CLEAR_FINALE_MS = 5000;
 let letterButtonLabelIndex = 0;
+
+function startBgm() {
+  if (!bgmPlayer) return;
+  const embedUrl = `https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=1&loop=1&playlist=${YOUTUBE_VIDEO_ID}&controls=0`;
+  bgmPlayer.src = embedUrl;
+}
+
+function withCurrentQuery(path) {
+  const params = new URLSearchParams(window.location.search);
+  if (IS_BGM_MODE) params.set("bgm", "1");
+  if (IS_TEST_MODE) params.set("test", "1");
+  const query = params.toString();
+  return query ? `${path}?${query}` : path;
+}
 
 function shuffle(list) {
   const arr = [...list];
@@ -263,7 +280,7 @@ letterCloseBtn.addEventListener("click", () => {
     letterCloseBtn.disabled = true;
     document.body.classList.add("is-exiting");
     window.setTimeout(() => {
-      window.location.href = "certificate.html";
+      window.location.href = withCurrentQuery("certificate.html");
     }, 900);
     return;
   }
@@ -316,3 +333,7 @@ if (IS_TEST_MODE) {
 
 updateTimerUi();
 lockBoardUi(true);
+
+if (IS_BGM_MODE) {
+  startBgm();
+}

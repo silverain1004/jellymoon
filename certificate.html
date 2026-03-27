@@ -124,6 +124,15 @@
         letter-spacing: 0.35em;
       }
     }
+
+    .bgm-player {
+      position: fixed;
+      width: 0;
+      height: 0;
+      border: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -135,23 +144,38 @@
       <p class="desc">
         <br />
         <br />
-        귀하는 은근한 존재감과 타이밍 한 방으로<br />
-        분위기를 뒤집는 능력을 보유하였으며<br />
-        혼자 있으면 잘났고 함께 있으면 더 잘난<br />
-        최고의 친구이므로 이 상을 수여합니다.<br />
+        귀하는 유쾌한 입담과 타이밍으로<br />
+        주변인에게 큰 웃음을 주며<br />
+        특히 은비에게 큰 힘이 되므로<br />
+        이 상을 수여합니다.<br />
         <br />
-        <br /> 
-        ※ 이제 인정하고 살아도 됨
       </p>
       <p class="date">2026년 3월 28일</p>
+      <br />
       <div class="sign-row">
         <div>
-          <p class="issuer">잘난 친구</p>
+          <p class="issuer">너의 짱친</p>
           <p class="name">최은비</p>
         </div>
         <span class="stamp">㊞</span>
       </div>
     </section>
   </article>
+  <iframe
+    id="bgmPlayer"
+    class="bgm-player"
+    title="background music"
+    src=""
+    allow="autoplay; encrypted-media"
+    referrerpolicy="strict-origin-when-cross-origin"
+  ></iframe>
+  <script>
+    const bgmPlayer = document.getElementById("bgmPlayer");
+    const params = new URLSearchParams(window.location.search);
+    if (bgmPlayer && params.get("bgm") === "1") {
+      const videoId = "-YBTYrIzlYc";
+      bgmPlayer.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&controls=0`;
+    }
+  </script>
 </body>
 </html>
